@@ -1,0 +1,41 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\Michał\\RiderProjects\\MASY\\s25028_mas\\s25028_mas\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\s25028_mas.bundle.scp.css",
+      "PackagePath": "staticwebassets\\s25028_mas.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\Users\\Michał\\RiderProjects\\MASY\\s25028_mas\\s25028_mas\\wwwroot\\app.css",
+      "PackagePath": "staticwebassets\\app.css"
+    },
+    {
+      "Id": "C:\\Users\\Michał\\RiderProjects\\MASY\\s25028_mas\\s25028_mas\\wwwroot\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Michał\\RiderProjects\\MASY\\s25028_mas\\s25028_mas\\wwwroot\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Michał\\RiderProjects\\MASY\\s25028_mas\\s25028_mas\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.s25028_mas.props",
+      "PackagePath": "build\\s25028_mas.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.s25028_mas.props",
+      "PackagePath": "buildMultiTargeting\\s25028_mas.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.s25028_mas.props",
+      "PackagePath": "buildTransitive\\s25028_mas.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.s25028_mas.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

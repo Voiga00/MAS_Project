@@ -1,0 +1,121 @@
+﻿@page "/add-player"
+@using Microsoft.EntityFrameworkCore
+@using s25028_mas.Context
+@using s25028_mas.Entities
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject MyDbContext dbcontext
+
+<h3 style="padding-top: 50px;">Dodaj zawodnika</h3>
+<p style="padding-top: 20px;padding-bottom: 10px; text-align: center;">Podaj ID zawodnika którego chcesz dodać do swojej drużyny:</p>
+<input @bind="playerId" placeholder="ID zawodnika" />
+
+<p style="padding-top: 20px; padding-bottom: 10px; text-align: center;">Podaj ID drużyny do której chcesz dodać zawodnika:</p>
+<input @bind="teamId" placeholder="ID drużyny" />
+
+<nav><button @onclick="CheckPlayer">Dodaj</button></nav>
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <p style="color: green;">@successMessage</p>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color: red;">@errorMessage</p>
+}
+
+@code {
+    /// <summary>
+    ///     Stores the ID of the player to be added, as entered by the user.
+    /// </summary>
+    private string playerId;
+
+    /// <summary>
+    ///     Stores the ID of the team to which the player will be added, as entered by the user.
+    /// </summary>
+    private string teamId;
+
+    /// <summary>
+    ///     Stores success messages that occur during the player addition process.
+    /// </summary>
+    private string successMessage;
+
+    /// <summary>
+    ///     Stores error messages that occur during the player addition process.
+    /// </summary>
+    private string errorMessage;
+
+    /// <summary>
+    ///     Checks if the player and team IDs are valid, and adds the player to the team if both are found.
+    ///     Displays success or error messages based on the outcome.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    private async Task CheckPlayer()
+    {
+        // Clear previous messages.
+        successMessage = string.Empty;
+        errorMessage = string.Empty;
+
+        // Validate the input IDs.
+        if (!string.IsNullOrEmpty(playerId) && !string.IsNullOrEmpty(teamId) && 
+            int.TryParse(playerId, out int playerIdInt) && int.TryParse(teamId, out int teamIdInt))
+        {
+            try
+            {
+                Console.WriteLine($"Szukam zawodnika o ID: {playerIdInt}");
+                
+                // Find the player in the database.
+                var player = await dbcontext.Players
+                    .Include(p => p.Team_ID_teamNavigation)
+                    .FirstOrDefaultAsync(p => p.ID_Player == playerIdInt);
+                 
+                if (player != null)
+                {
+                    Console.WriteLine($"Znalazłem zawodnika: {player.ID_Player}");
+                    
+                    // Find the new team in the database.
+                    var newTeam = await dbcontext.Teams.FindAsync(teamIdInt);
+                    if (newTeam != null)
+                    {
+                        // Remove the player from the current team, if assigned.
+                        if (player.Team_ID_teamNavigation != null)
+                        {
+                            var currentTeam = await dbcontext.Teams.FindAsync(player.Team_ID_team);
+                            if (currentTeam != null)
+                            {
+                                currentTeam.Players.Remove(player);
+                            }
+                        }
+                        
+                        // Add the player to the new team.
+                        player.Team_ID_teamNavigation = newTeam;
+                        player.Team_ID_team = newTeam.ID_team;
+                        newTeam.Players.Add(player);
+                        await dbcontext.SaveChangesAsync();
+
+                        // Set success message and navigate to confirmation page.
+                        successMessage = $"Zawodnik {playerId} został dodany do drużyny {teamId}.";
+                        Navigation.NavigateTo($"/confirm-add-player/{playerIdInt}");
+                    }
+                    else
+                    {
+                        errorMessage = "Nie znaleziono drużyny.";
+                    }
+                }
+                else
+                {
+                    errorMessage = "Nie znaleziono zawodnika.";
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Wystąpił błąd: {ex.Message}";
+            }
+        }
+        else
+        {
+            errorMessage = "Nieprawidłowe ID zawodnika lub drużyny.";
+        }
+    }
+}

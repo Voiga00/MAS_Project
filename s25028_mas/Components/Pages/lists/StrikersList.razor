@@ -1,0 +1,62 @@
+﻿@page "/strikers-list"
+@using Microsoft.EntityFrameworkCore
+@using s25028_mas.Context
+@using s25028_mas.Entities
+@inject MyDbContext dbcontext
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<h3>Wszyscy Napastincy</h3>
+
+<nav><a class="btn" href="/fieldplayers-list">Powrót</a></nav>
+
+@if (strikers != null)
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID Player</th>
+            <th>Imie</th>
+            <th>Nazwisko</th>
+            <th>Numer</th>
+            <th>Drużyna</th>
+            <th>Akcje</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var striker in strikers)
+        {
+            <tr>
+                <td>@striker.FieldPlayer_ID_FieldPlayerNavigation.Player_ID_PlayerNavigation.ID_Player</td>
+                <td>@striker.FieldPlayer_ID_FieldPlayerNavigation.Player_ID_PlayerNavigation.Person_ID_PersonNavigation.name</td>
+                <td>@striker.FieldPlayer_ID_FieldPlayerNavigation.Player_ID_PlayerNavigation.Person_ID_PersonNavigation.Surname</td>
+                <td>@striker.FieldPlayer_ID_FieldPlayerNavigation.Player_ID_PlayerNavigation.Number</td>
+                <td>@(striker.FieldPlayer_ID_FieldPlayerNavigation.Player_ID_PlayerNavigation.Team_ID_team == 999 ? "Brak drużyny" : $"Team {striker.FieldPlayer_ID_FieldPlayerNavigation.Player_ID_PlayerNavigation.Team_ID_team}")</td>
+                <td>
+                    <button @onclick="() => NavigateToAttacker(striker.FieldPlayer_ID_FieldPlayerNavigation.Player_ID_PlayerNavigation.ID_Player)">Szczegóły</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Loading goalkeepers...</p>
+}
+
+@code {
+    private List<Striker> strikers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        strikers = await dbcontext.Strikers
+            .Include(g => g.FieldPlayer_ID_FieldPlayerNavigation.Player_ID_PlayerNavigation.Person_ID_PersonNavigation)
+            .ToListAsync();
+    }
+
+    private void NavigateToAttacker(int playerId)
+    {
+        Navigation.NavigateTo($"/summary/{playerId}");
+    }
+}

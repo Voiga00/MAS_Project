@@ -1,0 +1,73 @@
+﻿@page "/choose-player"
+@using Microsoft.EntityFrameworkCore
+@using s25028_mas.Context
+@using s25028_mas.Entities
+@inject NavigationManager Navigation
+@inject MyDbContext dbcontext
+@rendermode InteractiveServer
+
+<h3>Wyberz Zawodnika</h3>
+<p>Podaj ID gracza którego chcesz zmodyfikować:</p>
+<input @bind="playerId" placeholder="Player ID" />
+
+<button @onclick="CheckPlayer">Submit</button>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color: red;">@errorMessage</p>
+}
+
+@code {
+    /// <summary>
+    ///     The ID of the player to be modified.
+    /// </summary>
+    private int playerId;
+
+    /// <summary>
+    ///     Stores error messages that occur during the validation of the player ID.
+    /// </summary>
+    private string errorMessage;
+
+    /// <summary>
+    ///     Checks if the player with the given ID exists in the database.
+    ///     If the player exists, navigates to the EditPlayer page.
+    ///     If the player does not exist or if an error occurs, displays an appropriate error message.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    private async Task CheckPlayer()
+    {
+        // Clear the error message before starting validation.
+        errorMessage = string.Empty;
+
+        // Check if the player ID is greater than zero.
+        if (playerId > 0)
+        {
+            try
+            {
+                // Asynchronously find the player in the database.
+                var player = await dbcontext.Players.FindAsync(playerId);
+
+                if (player != null)
+                {
+                    // Player exists, navigate to EditPlayer page.
+                    Navigation.NavigateTo($"/edit-player/{playerId}");
+                }
+                else
+                {
+                    // Set an error message if the player is not found.
+                    errorMessage = "Player not found.";
+                }
+            }
+            catch (Exception ex)
+            {
+                // Set an error message if an exception occurs.
+                errorMessage = $"An error occurred: {ex.Message}";
+            }
+        }
+        else
+        {
+            // Set an error message if the player ID is invalid.
+            errorMessage = "Invalid player ID.";
+        }
+    }
+}

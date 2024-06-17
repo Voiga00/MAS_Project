@@ -1,0 +1,73 @@
+﻿@page "/confirm-add-player/{playerId:int}"
+@using Microsoft.EntityFrameworkCore
+@using s25028_mas.Context
+@using s25028_mas.Entities
+@inject MyDbContext dbcontext
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<h3>Potwierdzenie</h3>
+
+@if (player != null && team != null)
+{
+    <nav>
+        <p>Zawodnik @player.Person_ID_PersonNavigation.name @player.Person_ID_PersonNavigation.Surname (id: @player.ID_Player) został dodany do drużyny @team.ID_team.</p>
+    </nav>
+
+    <h4 style="text-align: center;">Czy chcesz zmienić informacje o tym zawodniku?</h4>
+    <nav>
+        <button class="btn" @onclick="EditPlayer">Tak</button>
+        <button class="btn" @onclick="BackToHome">Nie</button>
+    </nav>
+}
+else
+{
+    <p>Nie znaleziono zawodnika lub drużyny.</p>
+}
+
+@code {
+    /// <summary>
+    ///     The ID of the player to be confirmed, obtained from the route parameter.
+    /// </summary>
+    [Parameter] public int playerId { get; set; }
+
+    /// <summary>
+    ///     The player entity being confirmed.
+    /// </summary>
+    private Player player;
+
+    /// <summary>
+    ///     The team entity to which the player has been added.
+    /// </summary>
+    private Team team;
+
+    /// <summary>
+    ///     Initializes the component and loads the player and team data.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    protected override async Task OnInitializedAsync()
+    {
+        player = await dbcontext.Players
+            .Include(p => p.Team_ID_teamNavigation)
+            .Include(p => p.Person_ID_PersonNavigation)
+            .FirstOrDefaultAsync(p => p.ID_Player == playerId) ?? throw new InvalidOperationException();
+
+        team = player.Team_ID_teamNavigation;
+    }
+
+    /// <summary>
+    ///     Navigates to the edit player page.
+    /// </summary>
+    private void EditPlayer()
+    {
+        Navigation.NavigateTo($"/edit-player/{playerId}");
+    }
+
+    /// <summary>
+    ///     Navigates back to the home dashboard.
+    /// </summary>
+    private void BackToHome()
+    {
+        Navigation.NavigateTo("/dashboard");
+    }
+}

@@ -1,0 +1,63 @@
+﻿@page "/teams"
+@using Microsoft.EntityFrameworkCore
+@using s25028_mas.Context
+@using s25028_mas.Entities
+@inject MyDbContext dbcontext
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<h3>Drużyny</h3>
+
+@if (teams != null)
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID Drużyny</th>
+            <th>Nazwa drużyny</th>
+            <th>Ligi</th>
+            <th>Akcje</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var team in teams)
+    {
+        if (team.ID_team != 999)
+        {
+            <tr>
+                <td>@team.ID_team</td>
+                <td>Drużyna @team.ID_team</td>
+                <td>Liga @team.League_ID_League</td>
+                <td><button @onclick="() => NavigateToTeam(team.ID_team)">Zawodnicy</button></td>
+            </tr>
+        }
+    }
+    </tbody>
+    </table>
+}
+else
+{
+    <p>Loading teams...</p>
+}
+
+@code {
+    private List<Team> teams;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            teams = await dbcontext.Teams.ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading teams: {ex.Message}");
+        }
+    }
+
+    private void NavigateToTeam(int teamId)
+    {
+        Navigation.NavigateTo($"/team-{teamId}");
+    }
+
+}

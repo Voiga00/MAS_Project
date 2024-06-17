@@ -1,0 +1,145 @@
+﻿@page "/edit-player/{playerId:int}"
+@using Microsoft.EntityFrameworkCore
+@using s25028_mas.Entities
+@using s25028_mas.Context
+@inject MyDbContext dbcontext
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<h3>Zawodnik @player?.Person_ID_PersonNavigation?.name @player?.Person_ID_PersonNavigation?.Surname</h3>
+
+@if (player != null)
+{
+    <EditForm Model="@player" OnValidSubmit="HandleValidSubmit" FormName="editPlayerForm">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+
+        <div>
+            <nav>
+                <label>Numer: </label>
+            </nav>
+            <InputNumber @bind-Value="player.Number"/>
+            <ValidationMessage For="@(() => player.Number)"/>
+        </div>
+        <div>
+            <nav>
+                <label>Gole: </label>
+            </nav>
+            <InputNumber @bind-Value="player.Goals"/>
+        </div>
+        <div>
+            <nav>
+                <label>Asysty: </label>
+            </nav>
+            <InputNumber @bind-Value="player.Assists"/>
+        </div>
+        <div>
+            <nav>
+                <label>Czerwone kartki: </label>
+            </nav>
+            <InputNumber @bind-Value="player.Red_C"/>
+        </div>
+        <div>
+            <nav>
+                <label>Żółte kartki: </label>
+            </nav>
+            <InputNumber @bind-Value="player.Yellow_Cards"/>
+        </div>
+        <div>
+            <nav>
+                <label>Minuty rozegrane: </label>
+            </nav>
+            <InputNumber @bind-Value="player.Minutes_played"/>
+        </div>
+        <div>
+            <nav>
+                <label>Mecze rozegrane: </label>
+            </nav>
+            <InputNumber @bind-Value="player.Matches_played"/>
+        </div>
+
+        <nav>
+            <button type="submit">Zatwierdź</button>
+        </nav>
+    </EditForm>
+}
+else
+{
+    <p>Zawodnik nie został znaleziony.</p>
+}
+
+@code {
+
+    /// <summary>
+    ///     The ID of the player to be edited, obtained from the route parameter.
+    /// </summary>
+    [Parameter]
+    public int playerId { get; set; }
+
+    /// <summary>
+    ///     The player entity being edited.
+    /// </summary>
+    private Player player;
+
+    /// <summary>
+    ///     Initializes the component and loads the player data.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Console.WriteLine($"Attempting to load player with ID: {playerId}");
+
+// Load the player from the database, including navigation properties.
+            player = await dbcontext.Players
+                .Include(p => p.Person_ID_PersonNavigation)
+                .FirstOrDefaultAsync(p => p.ID_Player == playerId);
+
+            if (player != null)
+            {
+                Console.WriteLine($"Loaded player: {player.ID_Player}");
+            }
+            else
+            {
+                Console.WriteLine("Player not found");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading player: {ex.Message}");
+            Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+        }
+    }
+
+    /// <summary>
+    ///     Handles the valid submit event of the form.
+    ///     Updates the player data in the database and saves changes.
+    ///     Navigates to the summary page of the updated player.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    private async Task HandleValidSubmit()
+    {
+        if (player != null)
+        {
+// Mark the player entity as modified.
+            dbcontext.Entry(player).State = EntityState.Modified;
+
+            try
+            {
+// Save the changes to the database.
+                await dbcontext.SaveChangesAsync();
+                Console.WriteLine("Changes saved successfully.");
+
+// Navigate to the summary page of the updated player.
+                Navigation.NavigateTo($"/summary/{player.ID_Player}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving changes: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+            }
+        }
+    }
+
+}

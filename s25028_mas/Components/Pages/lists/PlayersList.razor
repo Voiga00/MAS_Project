@@ -1,0 +1,65 @@
+﻿@page "/players"
+@using Microsoft.EntityFrameworkCore
+@using s25028_mas.Context
+@using s25028_mas.Entities
+@inject MyDbContext dbcontext
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<h3>Zawodnicy</h3>
+<nav>
+    <a class="btn" href="/goalkeepers-list">Bramkarze</a>
+    <a class="btn" href="/fieldplayers-list">Gracze w polu</a>
+</nav>
+
+@if (players != null)
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID Player</th>
+            <th>Imie</th>
+            <th>Nazwisko</th>
+            <th>Numer</th>
+            <th>Drużyna</th>
+            <th>Akcje</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var player in players)
+        {
+            <tr>
+                <td>@player.ID_Player</td>
+                <td>@player.Person_ID_PersonNavigation.name</td>
+                <td>@player.Person_ID_PersonNavigation.Surname</td>
+                <td>@player.Number</td>
+                <td>@(player.Team_ID_team == 999 ? "Brak drużyny" : $"Team {player.Team_ID_team}")</td>
+                <td>
+                    <button @onclick="() => NavigateToPlayer(player.ID_Player)">Szczegóły</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Loading players...</p>
+}
+
+@code {
+    private List<Player> players;
+
+    protected override async Task OnInitializedAsync()
+    {
+        players = await dbcontext.Players
+            .Include(p => p.Person_ID_PersonNavigation)
+            .ToListAsync();
+    }
+
+    private void NavigateToPlayer(int playerId)
+    {
+        Navigation.NavigateTo($"/summary/{playerId}");
+    }
+
+}

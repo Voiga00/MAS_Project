@@ -1,0 +1,63 @@
+﻿@page "/leagues"
+@using Microsoft.EntityFrameworkCore
+@using s25028_mas.Context
+@using s25028_mas.Entities
+@inject MyDbContext dbcontext
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<h3>Ligi</h3>
+
+@if (leagues != null)
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nazwa</th>
+            <th>Akcje</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var league in leagues)
+        {
+            if (league.ID_League != 999)
+            {
+                <tr>
+                    <td>@league.ID_League</td>
+                    <td>Liga @league.ID_League</td>
+                    <td>
+                        <button @onclick="() => NavigateToLeague(league.ID_League)">Drużyny</button>
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Loading leagues...</p>
+}
+
+@code {
+    private List<League> leagues;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            leagues = await dbcontext.Leagues.ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading leagues: {ex.Message}");
+        }
+    }
+
+    private void NavigateToLeague(int leagueId)
+    {
+        Navigation.NavigateTo($"/league-{leagueId}");
+    }
+
+}

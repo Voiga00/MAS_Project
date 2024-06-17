@@ -1,0 +1,46 @@
+﻿@page "/summary/{playerId:int}"
+@using s25028_mas.Context
+@using s25028_mas.Entities
+@inject MyDbContext dbcontext
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<h3 style="padding-top: 50px; font-size: 50px;">
+    Podsumowanie Gracza @player?.Person_ID_PersonNavigation?.name @player?.Person_ID_PersonNavigation?.Surname
+     @((player?.Team_ID_team == 999) ? "" : $"grający w drużynie Drużyna {player?.Team_ID_team}")
+</h3>
+
+@if (player != null)
+{
+<nav>
+    <p>Numer: @player.Number</p>
+    <p>Gole: @player.Goals</p>
+    <p>Asysty: @player.Assists</p>
+    <p>Żółte Kartki: @player.Yellow_Cards</p>
+    <p>Czerwone Kartki: @player.Red_C</p>
+    <p>Zagrane mecze: @player.Matches_played</p>
+    <p>Zagrane minuty: @player.Minutes_played</p>
+    <button class="btn btn-primary" @onclick="ToEdit">Edit</button>
+</nav>
+}
+else
+{
+<p>Loading...</p>
+}
+
+@code {
+[Parameter] public int playerId { get; set; }
+private Player player;
+
+protected override async Task OnInitializedAsync()
+{
+player = await dbcontext.Players
+.Include(p => p.Person_ID_PersonNavigation)
+.FirstOrDefaultAsync(p => p.ID_Player == playerId);
+}
+
+private void ToEdit()
+{
+Navigation.NavigateTo($"/edit-player/{playerId}");
+}
+}

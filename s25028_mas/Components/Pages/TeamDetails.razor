@@ -1,0 +1,63 @@
+﻿@page "/team-{teamId:int}"
+@using Microsoft.EntityFrameworkCore
+@using s25028_mas.Context
+@using s25028_mas.Entities
+@inject MyDbContext dbcontext
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<h3>Players in Team @teamId</h3>
+
+@if (players != null)
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nazwa</th>
+            <th>Akcje</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var player in players)
+        {
+            <tr>
+                <td>@player.ID_Player</td>
+                <td>@player.Person_ID_PersonNavigation.name @player.Person_ID_PersonNavigation.Surname</td>
+                <td>
+                    <button @onclick="() => NavigateToPlayer(player.ID_Player)">Szczegóły</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Loading players...</p>
+}
+
+@code {
+    [Parameter] public int teamId { get; set; }
+    private List<Player> players;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            players = await dbcontext.Players
+                .Include(p => p.Person_ID_PersonNavigation)
+                .Where(p => p.Team_ID_team == teamId)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading players: {ex.Message}");
+        }
+    }
+
+    private void NavigateToPlayer(int playerId)
+    {
+        Navigation.NavigateTo($"/summary/{playerId}");
+    }
+}

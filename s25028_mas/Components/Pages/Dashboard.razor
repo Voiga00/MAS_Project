@@ -1,0 +1,32 @@
+﻿@page "/dashboard"
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+
+
+<h3 class="padding">Witaj, XYZABC</h3>
+
+
+<nav>
+    <button class="btn" @onclick="AddPlayerToTeam">Zmien drużyne dla zawodnika</button>
+    <button class="btn" @onclick="ChoosePlayerToEdit">Edytuj zawodnika</button>
+    <button class="btn" @onclick="CreatePlayer">Dodaj zawodnika</button>
+</nav>
+
+@code {
+    public void AddPlayerToTeam()
+    {
+        Navigation.NavigateTo("/add-player");
+    }
+    
+    public void ChoosePlayerToEdit()
+    {
+        Navigation.NavigateTo("/choose-player");
+    }
+
+    public void CreatePlayer()
+    {
+        Navigation.NavigateTo("create-player");
+    }
+    
+}

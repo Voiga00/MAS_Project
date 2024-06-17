@@ -1,0 +1,150 @@
+﻿@page "/create-player"
+@using Microsoft.EntityFrameworkCore
+@using s25028_mas.Context
+@using s25028_mas.Entities
+@inject MyDbContext dbcontext
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<h3>Stwórz Zawodnika</h3>
+
+<EditForm Model="@newPlayer" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
+    <div>
+        <h4>Osoba</h4>
+        <label>Imie: </label>
+        <InputText @bind-Value="newPerson.name"/>
+    </div>
+    <div>
+        <label>Nazwisko: </label>
+        <InputText @bind-Value="newPerson.Surname"/>
+    </div>
+    <div>
+        <label>Data Urodzenia: </label>
+        <InputDate @bind-Value="newPerson.Date_of_birth"/>
+    </div>
+
+    <div>
+        <h4>Zawodnik</h4>
+        <label>Numer: </label>
+        <InputNumber @bind-Value="newPlayer.Number"/>
+    </div>
+    <div>
+        <label>Lepsza Noga: </label>
+        <InputText @bind-Value="newPlayer.Stronger_Foot"/>
+    </div>
+    <div>
+        <label>Gole: </label>
+        <InputNumber @bind-Value="newPlayer.Goals"/>
+    </div>
+    <div>
+        <label>Asysty: </label>
+        <InputNumber @bind-Value="newPlayer.Assists"/>
+    </div>
+    <div>
+        <label>Czerwone Kartki: </label>
+        <InputNumber @bind-Value="newPlayer.Red_C"/>
+    </div>
+    <div>
+        <label>Żółte Kartki: </label>
+        <InputNumber @bind-Value="newPlayer.Yellow_Cards"/>
+    </div>
+    <div>
+        <label>Rozegrane Minuty: </label>
+        <InputNumber @bind-Value="newPlayer.Minutes_played"/>
+    </div>
+    <div>
+        <label>Rozegrane Mecze: </label>
+        <InputNumber @bind-Value="newPlayer.Matches_played"/>
+    </div>
+    <div>
+        <label>ID drużyny(jeśli gracz nie należy do żadnej drużyny daj 0): </label>
+        <InputNumber @bind-Value="newPlayer.Team_ID_team"/>
+    </div>
+
+    <button type="submit">Dodaj</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <p style="color: green;">@successMessage</p>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color: red;">@errorMessage</p>
+}
+
+@code {
+    /// <summary>
+    ///     Instance of the Person class representing a new person.
+    /// </summary>
+    private Person newPerson = new Person();
+
+    /// <summary>
+    ///     Instance of the Player class representing a new player.
+    /// </summary>
+    private Player newPlayer = new Player();
+
+    /// <summary>
+    ///     Stores success messages that occur during the player creation process.
+    /// </summary>
+    private string successMessage;
+
+    /// <summary>
+    ///     Stores error messages that occur during the player creation process.
+    /// </summary>
+    private string errorMessage;
+
+    /// <summary>
+    ///     Handles the valid submit event of the form. 
+    ///     Adds the new person and player to the database, and navigates to the summary page.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    private async Task HandleValidSubmit()
+    {
+        // Clear any previous messages.
+        successMessage = string.Empty;
+        errorMessage = string.Empty;
+
+        try
+        {
+            // Manually set the ID_Person for the new person.
+            var maxPersonId = await dbcontext.People.MaxAsync(p => (int?)p.ID_Person) ?? 0;
+            newPerson.ID_Person = maxPersonId + 1;
+
+            // Add the new Person to the context and save changes.
+            dbcontext.People.Add(newPerson);
+            await dbcontext.SaveChangesAsync();
+
+            // Manually set the ID_Player for the new player.
+            var maxPlayerId = await dbcontext.Players.MaxAsync(p => (int?)p.ID_Player) ?? 0;
+            newPlayer.ID_Player = maxPlayerId + 1;
+
+            // Set the Person_ID_Person in Player to the newly created Person's ID.
+            newPlayer.Person_ID_Person = newPerson.ID_Person;
+            newPlayer.Person_ID_PersonNavigation = newPerson;
+
+            // Ensure the Team_ID_team is valid.
+            if (newPlayer.Team_ID_team == 0)
+            {
+                newPlayer.Team_ID_team = 999;
+            }
+
+            // Add the new Player to the context and save changes.
+            dbcontext.Players.Add(newPlayer);
+            await dbcontext.SaveChangesAsync();
+
+            // Set the success message and navigate to the summary page.
+            successMessage = "Player created successfully!";
+            Navigation.NavigateTo($"/summary/{newPlayer.ID_Player}");
+        }
+        catch (Exception ex)
+        {
+            // Set the error message if an exception occurs.
+            errorMessage = $"Error creating player: {ex.Message}";
+        }
+    }
+}

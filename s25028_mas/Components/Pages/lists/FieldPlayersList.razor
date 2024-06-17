@@ -1,0 +1,67 @@
+﻿@page "/fieldplayers-list"
+@using Microsoft.EntityFrameworkCore
+@using s25028_mas.Context
+@using s25028_mas.Entities
+@inject MyDbContext dbcontext
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<h3>Gracze w Plolu</h3>
+<nav>
+    <a class="btn" href="/defenders-list">Obrońcy</a>
+    <a class="btn" href="/midfielders-list">Pomocnicy</a>
+    <a class="btn" href="/strikers-list">Napastnicy</a>
+    <a class="btn" href="/players">Powrót</a>
+</nav>
+
+@if (fieldPlayers != null)
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID Player</th>
+            <th>Imie</th>
+            <th>Nazwisko</th>
+            <th>Numer</th>
+            <th>Drużyna</th>
+            <th>Akcje</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var fieldPlayer in fieldPlayers)
+        {
+            <tr>
+                <td>@fieldPlayer.Player_ID_PlayerNavigation.ID_Player</td>
+                <td>@fieldPlayer.Player_ID_PlayerNavigation.Person_ID_PersonNavigation.name</td>
+                <td>@fieldPlayer.Player_ID_PlayerNavigation.Person_ID_PersonNavigation.Surname</td>
+                <td>@fieldPlayer.Player_ID_PlayerNavigation.Number</td>
+                <td>@(fieldPlayer.Player_ID_PlayerNavigation.Team_ID_team == 999 ? "Brak drużyny" : $"Team {fieldPlayer.Player_ID_PlayerNavigation.Team_ID_team}")</td>
+                <td>
+                    <button @onclick="() => NavigateToPlayer(fieldPlayer.Player_ID_PlayerNavigation.ID_Player)">View Details</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Loading field players...</p>
+}
+
+@code {
+    private List<FieldPlayer> fieldPlayers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        fieldPlayers = await dbcontext.FieldPlayers
+            .Include(fp => fp.Player_ID_PlayerNavigation)
+                .ThenInclude(p => p.Person_ID_PersonNavigation)
+            .ToListAsync();
+    }
+
+    private void NavigateToPlayer(int playerId)
+    {
+        Navigation.NavigateTo($"/summary/{playerId}");
+    }
+}
